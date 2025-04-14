@@ -1,0 +1,4 @@
+.idea
+.poetry_env
+__pycache__
+*.egg-info
