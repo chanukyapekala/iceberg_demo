@@ -30,4 +30,26 @@ run-basic:
 run-schema-evolution:
 	$(call RUN_SPARK_MODULE,schema_evolution)
 
-run-all: run-basic run-schema-evolution run-partitioning
+run-metadata-changes:
+	$(call RUN_SPARK_MODULE,metadata_changes)
+
+run-time-travel:
+	$(call RUN_SPARK_MODULE,time_travel)
+
+run-snapshot-diff:
+	$(call RUN_SPARK_MODULE,snapshot_diff)
+
+run-list-tables:
+	$(call RUN_SPARK_MODULE,list_tables)
+
+run-query-list-tables:
+	$(call RUN_SPARK_MODULE,query_table)
+
+run-query-table:
+	$(SPARK_SUBMIT) \
+	  $(SPARK_COMMON_FLAGS) \
+	  src/project/query_table.py basic_table
+
+
+
+#run-all: run-basic run-schema-evolution run-partitioning

@@ -2,3 +2,5 @@
 .poetry_env
 __pycache__
 *.egg-info
+metastore_db
+derby.log
