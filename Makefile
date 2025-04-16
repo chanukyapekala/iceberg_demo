@@ -50,6 +50,15 @@ run-query-table:
 	  $(SPARK_COMMON_FLAGS) \
 	  src/project/query_table.py basic_table
 
+run-scd-type-2:
+	$(call RUN_SPARK_MODULE,scd_type2)
+
+run-ml-issue:
+	$(call RUN_SPARK_MODULE,ml_issue)
+
+run-gen_ai_issue:
+	$(call RUN_SPARK_MODULE,gen_ai_issue)
+
 
 
 #run-all: run-basic run-schema-evolution run-partitioning
