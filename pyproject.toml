@@ -7,7 +7,7 @@ authors = [
 ]
 readme = "README.md"
 packages = [
-    {include = "src"}
+    {include = "iceberg_demo", from = "src"}
 ]
 dependencies = [
     "apache-airflow (>=2.10.5,<3.0.0)",

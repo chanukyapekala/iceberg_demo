@@ -4,8 +4,8 @@ from datetime import datetime
 import subprocess
 
 # Define Python callables for each task
-def run_basic():
-    subprocess.run(["make", "run-basic"], check=True)
+def run_load_sample_data():
+    subprocess.run(["make", "run-load-sample-data"], check=True)
 
 def run_ml():
     subprocess.run(["make", "run-ml-issue"], check=True)
@@ -21,9 +21,9 @@ with DAG(
         catchup=False,
 ) as dag:
     # Define tasks
-    basic_task = PythonOperator(
-        task_id="run_basic",
-        python_callable=run_basic,
+    load_sample_data_task = PythonOperator(
+        task_id="run_load_sample_data",
+        python_callable=run_load_sample_data,
     )
 
     ml_task = PythonOperator(
@@ -37,4 +37,4 @@ with DAG(
     )
 
     # Set task dependencies
-    basic_task >> ml_task >> genai_task
+    load_sample_data_task >> ml_task >> genai_task

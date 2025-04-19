@@ -1,4 +1,4 @@
-# src/project/basic.py
+# src/project/load_sample_data.py
 
 from pyspark.sql import SparkSession
 
