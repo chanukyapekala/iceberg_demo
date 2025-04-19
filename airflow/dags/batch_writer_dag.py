@@ -4,8 +4,8 @@ from datetime import datetime
 import subprocess
 
 # Define Python callables for each task
-def run_basic():
-    subprocess.run(["make", "run-basic"], check=True)
+def run_load_sample_data():
+    subprocess.run(["make", "run-load-sample-data"], check=True)
 
 def run_schema_evolution():
     subprocess.run(["make", "run-schema-evolution"], check=True)
@@ -24,9 +24,9 @@ with DAG(
         catchup=False,
 ) as dag:
     # Define tasks
-    basic_task = PythonOperator(
-        task_id="run_basic",
-        python_callable=run_basic,
+    load_sample_data_task = PythonOperator(
+        task_id="run_load_sample_data",
+        python_callable=run_load_sample_data,
     )
 
     schema_evolution_task = PythonOperator(
@@ -45,4 +45,4 @@ with DAG(
     )
 
     # Set task dependencies
-    basic_task >> schema_evolution_task >> partitioning_task >> scd_type_2_task
+    load_sample_data_task >> schema_evolution_task >> partitioning_task >> scd_type_2_task

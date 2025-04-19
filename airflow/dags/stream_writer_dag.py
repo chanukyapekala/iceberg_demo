@@ -1,17 +1,15 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
+import subprocess
 
-def run_basic():
-    import subprocess
-    subprocess.run(["make", "run-basic"], check=True)
+def run_load_sample_data():
+    subprocess.run(["make", "run-load-sample-data"], check=True)
 
 def run_producer():
-    import subprocess
     subprocess.run(["make", "run-producer"], check=True)
 
 def run_consumer():
-    import subprocess
     subprocess.run(["make", "run-consumer"], check=True)
 
 with DAG(
@@ -20,9 +18,9 @@ with DAG(
         schedule=None,
         catchup=False,
 ) as dag:
-    basic_task = PythonOperator(
-        task_id="run_basic",
-        python_callable=run_basic,
+    load_sample_data_task = PythonOperator(
+        task_id="run_load_sample_data",
+        python_callable=run_load_sample_data,
     )
 
     producer_task = PythonOperator(
@@ -36,4 +34,4 @@ with DAG(
     )
 
     # Set task dependencies
-    basic_task >> producer_task >> consumer_task
+    load_sample_data_task >> producer_task >> consumer_task

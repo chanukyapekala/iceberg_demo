@@ -33,8 +33,8 @@ run-schema-evolution:
 run-partitioning:
 	$(call RUN_SPARK_MODULE,partitioning)
 
-run-basic:
-	$(call RUN_SPARK_MODULE,basic)
+run-load-sample-data:
+	$(call RUN_SPARK_MODULE,load_sample_data)
 
 run-metadata-changes:
 	$(call RUN_SPARK_MODULE,metadata_changes)
