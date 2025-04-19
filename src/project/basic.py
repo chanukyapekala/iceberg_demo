@@ -13,3 +13,5 @@ df.writeTo("local.db.basic_table").createOrReplace()
 
 check_df = spark.read.table("local.db.basic_table")
 check_df.show()
+
+

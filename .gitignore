@@ -4,3 +4,8 @@ __pycache__
 *.egg-info
 metastore_db
 derby.log
+.DS_Store
+airflow/logs
+airflow/airflow.cfg
+airflow/webserver_config.py
+logs
