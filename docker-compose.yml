@@ -1,0 +1,26 @@
+version: "3.8"
+services:
+  airflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    volumes:
+      - ./airflow:/app/airflow
+      - ./src:/app/src
+    environment:
+      - AIRFLOW__CORE__DAGS_FOLDER=/app/airflow/dags
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    command: ["make", "start-airflow"]
+
+  spark:
+    image: bitnami/spark:3.4.0
+    environment:
+      - SPARK_MODE=master
+    ports:
+      - "7077:7077"
+      - "8088:8088"
+    volumes:
+      - ./src:/app/src
