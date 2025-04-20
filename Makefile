@@ -14,14 +14,14 @@ export PYSPARK_PYTHON
 define RUN_SPARK_MODULE
 $(SPARK_SUBMIT) \
   $(SPARK_COMMON_FLAGS) \
-  src/project/$(1).py
+  src/iceberg_demo/$(1).py
 endef
 
 # Generic rule to run streaming module
 define RUN_SPARK_STREAMING_MODULE
 $(SPARK_SUBMIT) \
   $(SPARK_COMMON_FLAGS) \
-  src/project/streaming/$(1).py
+  src/iceberg_demo/streaming/$(1).py
 endef
 
 export RUN_SPARK_MODULE

@@ -1,80 +1,67 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import current_timestamp, lit, col
-from pyspark.sql.types import StructType, StructField, IntegerType, StringType, TimestampType, BooleanType
+from pyspark.sql.functions import current_timestamp, lit, col, when
 
-
-# Initialize Spark session
+# Initialize Spark
 spark = SparkSession.builder.getOrCreate()
 
-# Define the target Iceberg table
-iceberg_table = "local.db.basic_table_2"
 
-# Define the schema explicitly
-schema = StructType([
-    StructField("id", IntegerType(), True),
-    StructField("name", StringType(), True),
-    StructField("start_date", TimestampType(), True),
-    StructField("end_date", TimestampType(), True),
-    StructField("is_current", BooleanType(), True)
-])
+# Read current table
+spark.sql("""
+    CREATE OR REPLACE TABLE local.db.dim_users_scd2 (
+        id INT,
+        name STRING,
+        age INT,
+        start_date DATE,
+        end_date DATE,
+        is_current BOOLEAN
+    ) USING iceberg
+    PARTITIONED BY (month(start_date))
+""")
 
-# Create initial data
-initial_data = spark.createDataFrame([
-    (1, "Alice", None, None, True),
-    (2, "Bob", None, None, True)
-], schema=schema)
+# Insert initial data from dim_users
+spark.sql("""
+    INSERT INTO local.db.dim_users_scd2
+    SELECT
+        id,
+        name,
+        age,
+        COALESCE(start_date, CURRENT_DATE()) as start_date,
+        NULL as end_date,
+        TRUE as is_current
+    FROM local.db.dim_users
+""")
 
-# Write initial data to the Iceberg table
-initial_data = initial_data.withColumn("start_date", current_timestamp()) \
-    .withColumn("end_date", lit(None).cast("timestamp"))
-initial_data.writeTo(iceberg_table).createOrReplace()
+# Create changes DataFrame and register as temp view
+changes = spark.createDataFrame([
+    (1, "Antti Updated", 26, "2024-03-20"),
+    (5, "Jason Updated", 46, "2024-03-20")
+], ["id", "name", "age", "start_date"])
+changes.createOrReplaceTempView("changes")
 
-# Simulate incoming data
-incoming_data = spark.createDataFrame([
-    (1, "Alice Updated"),
-    (3, "Charlie")
-], ["id", "name"])
+# Update using MERGE
+spark.sql("""
+    MERGE INTO local.db.dim_users_scd2 t
+    USING changes s
+    ON t.id = s.id AND t.is_current = true
+    WHEN MATCHED THEN
+        UPDATE SET end_date = CURRENT_DATE(), is_current = false
+    WHEN NOT MATCHED THEN
+        INSERT (id, name, age, start_date, end_date, is_current)
+        VALUES (s.id, s.name, s.age, CAST(s.start_date AS DATE), NULL, true)
+""")
 
-# Load the existing Iceberg table
-existing_data = spark.read.format("iceberg").load(iceberg_table)
-
-# Rename the 'name' column in incoming_data to avoid ambiguity
-incoming_data_renamed = incoming_data.withColumnRenamed("name", "incoming_name")
-
-# Mark existing records as expired if they are updated
-expired_records = existing_data.join(incoming_data_renamed, "id", "inner") \
-    .withColumn("end_date", current_timestamp()) \
-    .withColumn("is_current", lit(False))
-
-# Add new records with current flag
-new_records = incoming_data_renamed.withColumn("start_date", current_timestamp()) \
-    .withColumn("end_date", lit(None).cast("timestamp")) \
-    .withColumn("is_current", lit(True)) \
-    .withColumnRenamed("incoming_name", "name")
-
-# Align schemas of expired_records and new_records
-aligned_expired_records = expired_records.select(
-    col("id").cast("int"),
-    col("name").cast("string"),
-    col("start_date").cast("timestamp"),
-    col("end_date").cast("timestamp"),
-    col("is_current").cast("boolean")
-)
-
-aligned_new_records = new_records.select(
-    col("id").cast("int"),
-    col("name").cast("string"),
-    col("start_date").cast("timestamp"),
-    col("end_date").cast("timestamp"),
-    col("is_current").cast("boolean")
-)
-
-# Combine expired and new records
-scd2_data = aligned_expired_records.unionByName(aligned_new_records)
-
-# Write back to the Iceberg table
-scd2_data.writeTo(iceberg_table).overwritePartitions()
-
-# Verify the updated table
-check_df = spark.read.format("iceberg").load(iceberg_table)
-check_df.show(truncate=False)
+# Insert new versions
+spark.sql("""
+    INSERT INTO local.db.dim_users_scd2
+    SELECT
+        c.id,
+        c.name,
+        c.age,
+        CAST(c.start_date AS DATE),
+        NULL,
+        true
+    FROM changes c
+    JOIN local.db.dim_users_scd2 t
+    ON c.id = t.id
+    WHERE t.is_current = false
+""")

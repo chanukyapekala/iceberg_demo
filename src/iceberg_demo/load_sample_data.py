@@ -1,17 +1,25 @@
 # src/project/load_sample_data.py
 
 from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 
 spark = SparkSession.builder.getOrCreate()
 
-df = spark.createDataFrame([
-    (1, "Alice"),
-    (2, "Bob")
-], ["id", "name"])
+# drop existing table
+spark.sql("DROP TABLE IF EXISTS local.db.dim_users")
 
-df.writeTo("local.db.basic_table").createOrReplace()
+schema = StructType([
+    StructField("id", IntegerType(), True),
+    StructField("name", StringType(), True)
+])
 
-check_df = spark.read.table("local.db.basic_table")
-check_df.show()
+data = [
+    (1, "Antti"),
+    (2, "Eron"),
+    (3, "Matti"),
+    (4, "Teppo")
+]
 
+df = spark.createDataFrame(data, schema)
 
+df.writeTo("local.db.dim_users").create()
