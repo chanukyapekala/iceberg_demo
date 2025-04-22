@@ -3,7 +3,7 @@ import os
 
 spark = SparkSession.builder.getOrCreate()
 
-table = "local.db.basic_table"
+table = "local.db.dim_users"
 log_path = "logs/snapshot_diff.log"
 
 # Get snapshot metadata
@@ -11,7 +11,7 @@ snapshots_df = spark.sql(f"SELECT snapshot_id, committed_at FROM {table}.snapsho
 snapshots = snapshots_df.collect()
 
 if len(snapshots) < 2:
-    print("❗ Need at least two snapshots to show diff.")
+    print("Need at least two snapshots to show diff.")
 else:
     old_snapshot = snapshots[0]["snapshot_id"]
     new_snapshot = snapshots[-1]["snapshot_id"]
@@ -27,7 +27,7 @@ else:
     # Write log
     os.makedirs("logs", exist_ok=True)
     with open(log_path, "w") as log:
-        log.write(f"📸 Comparing snapshots:\n- Old: {old_snapshot}\n- New: {new_snapshot}\n\n")
+        log.write(f"Comparing snapshots:\n- Old: {old_snapshot}\n- New: {new_snapshot}\n\n")
 
         log.write("➕ Added Rows:\n")
         for row in added_rows.collect():
@@ -37,4 +37,4 @@ else:
         for row in removed_rows.collect():
             log.write(str(row) + "\n")
 
-    print(f"✅ Snapshot diff written to `{log_path}`")
+    print(f"Snapshot diff written to `{log_path}`")

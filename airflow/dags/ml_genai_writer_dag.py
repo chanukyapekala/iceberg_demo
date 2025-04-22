@@ -7,11 +7,8 @@ import subprocess
 def run_load_sample_data():
     subprocess.run(["make", "run-load-sample-data"], check=True)
 
-def run_ml():
-    subprocess.run(["make", "run-ml-issue"], check=True)
-
-def run_genai():
-    subprocess.run(["make", "run-gen_ai_issue"], check=True)
+def run_linear_regression():
+    subprocess.run(["make", "run-linear-regression"], check=True)
 
 # Define the DAG
 with DAG(
@@ -28,13 +25,8 @@ with DAG(
 
     ml_task = PythonOperator(
         task_id="ml_issue",
-        python_callable=run_ml,
-    )
-
-    genai_task = PythonOperator(
-        task_id="run_genai",
-        python_callable=run_genai,
+        python_callable=run_linear_regression,
     )
 
     # Set task dependencies
-    load_sample_data_task >> ml_task >> genai_task
+    load_sample_data_task >> ml_task

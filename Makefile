@@ -6,7 +6,10 @@ SPARK_COMMON_FLAGS = \
  --packages $(ICEBERG_PACKAGES) \
  --conf spark.sql.catalog.local=org.apache.iceberg.spark.SparkCatalog \
  --conf spark.sql.catalog.local.type=hadoop \
- --conf spark.sql.catalog.local.warehouse=$(WAREHOUSE_PATH)
+ --conf spark.sql.catalog.local.warehouse=$(WAREHOUSE_PATH) \
+  --conf spark.ui.showConsoleProgress=false \
+  --conf spark.log.level=ERROR \
+  --driver-java-options="-Dlog4j.configuration=file:log4j.properties"
 
 export PYSPARK_PYTHON
 
@@ -24,50 +27,57 @@ $(SPARK_SUBMIT) \
   src/iceberg_demo/streaming/$(1).py
 endef
 
+# Generic rule to run feature module
+define RUN_SPARK_FEATURE_MODULE
+$(SPARK_SUBMIT) \
+  $(SPARK_COMMON_FLAGS) \
+  src/iceberg_demo/features/$(1).py
+endef
+
+# Generic rule to run machine learning module
+define RUN_SPARK_ML_MODULE
+$(SPARK_SUBMIT) \
+  $(SPARK_COMMON_FLAGS) \
+  src/iceberg_demo/ml/$(1).py
+endef
+
+export RUN_SPARK_STREAMING_MODULE
+export RUN_SPARK_FEATURE_MODULE
 export RUN_SPARK_MODULE
 
 # Targets
 run-schema-evolution:
-	$(call RUN_SPARK_MODULE,schema_evolution)
+	$(call RUN_SPARK_FEATURE_MODULE,schema_evolution)
 
 run-partitioning:
-	$(call RUN_SPARK_MODULE,partitioning)
+	$(call RUN_SPARK_FEATURE_MODULE,partitioning)
+
+run-branching:
+	$(call RUN_SPARK_FEATURE_MODULE,table_branching)
 
 run-load-sample-data:
 	$(call RUN_SPARK_MODULE,load_sample_data)
 
-run-metadata-changes:
-	$(call RUN_SPARK_MODULE,metadata_changes)
-
-run-time-travel:
-	$(call RUN_SPARK_MODULE,time_travel)
-
-run-snapshot-diff:
-	$(call RUN_SPARK_MODULE,snapshot_diff)
-
-run-list-tables:
-	$(call RUN_SPARK_MODULE,list_tables)
-
-run-query-list-tables:
-	$(call RUN_SPARK_MODULE,query_list_tables)
-
-run-display-table:
-	$(call RUN_SPARK_MODULE,display_table_rows)
-
 run-scd-type-2:
-	$(call RUN_SPARK_MODULE,scd_type2)
+	$(call RUN_SPARK_FEATURE_MODULE,scd_type2)
 
-run-ml-issue:
-	$(call RUN_SPARK_MODULE,ml_issue)
+run-linear-regression:
+	$(call RUN_SPARK_ML_MODULE,linear_regression)
 
 run-gen_ai_issue:
-	$(call RUN_SPARK_MODULE,gen_ai_issue)
+	$(call RUN_SPARK_ML_MODULE,gen_ai_issue)
 
 run-producer:
 	$(call RUN_SPARK_STREAMING_MODULE,producer)
 
 run-consumer:
 	$(call RUN_SPARK_STREAMING_MODULE,consumer)
+
+run-structured-streaming:
+	$(call RUN_SPARK_STREAMING_MODULE,structured_streaming)
+
+run-time-travel-feature:
+	$(call RUN_SPARK_FEATURE_MODULE,time_travel)
 
 # Airflow Variables
 AIRFLOW_HOME=$(PWD)/airflow

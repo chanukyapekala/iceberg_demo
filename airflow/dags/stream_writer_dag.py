@@ -3,8 +3,8 @@ from airflow.operators.python import PythonOperator
 from datetime import datetime
 import subprocess
 
-def run_load_sample_data():
-    subprocess.run(["make", "run-load-sample-data"], check=True)
+def run_structured_streaming():
+    subprocess.run(["make", "run-structured-streaming"], check=True)
 
 def run_producer():
     subprocess.run(["make", "run-producer"], check=True)
@@ -18,9 +18,9 @@ with DAG(
         schedule=None,
         catchup=False,
 ) as dag:
-    load_sample_data_task = PythonOperator(
-        task_id="run_load_sample_data",
-        python_callable=run_load_sample_data,
+    structured_streaming_task = PythonOperator(
+        task_id="run_structured_streaming",
+        python_callable=run_structured_streaming,
     )
 
     producer_task = PythonOperator(
@@ -34,4 +34,4 @@ with DAG(
     )
 
     # Set task dependencies
-    load_sample_data_task >> producer_task >> consumer_task
+    producer_task >> structured_streaming_task >> consumer_task

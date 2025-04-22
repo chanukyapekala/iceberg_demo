@@ -10,3 +10,5 @@ airflow/airflow.cfg
 airflow/webserver_config.py
 logs
 dist
+airflow/airflow.db
+airflow/airflow-webserver.pid

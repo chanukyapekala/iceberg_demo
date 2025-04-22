@@ -4,6 +4,8 @@ from pyspark.sql.functions import current_timestamp, lit, col, when
 # Initialize Spark
 spark = SparkSession.builder.getOrCreate()
 
+# drop existing table if exists
+spark.sql("DROP TABLE IF EXISTS local.db.dim_users_scd2")
 
 # Read current table
 spark.sql("""
@@ -25,7 +27,7 @@ spark.sql("""
         id,
         name,
         age,
-        COALESCE(start_date, CURRENT_DATE()) as start_date,
+        CURRENT_DATE() as start_date,
         NULL as end_date,
         TRUE as is_current
     FROM local.db.dim_users
