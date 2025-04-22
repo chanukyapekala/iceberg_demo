@@ -1,46 +1,43 @@
 from pyspark.sql import SparkSession
-from time import sleep
 
 spark = SparkSession.builder.getOrCreate()
 
-print("Dropping existing table...")
-spark.sql("DROP TABLE IF EXISTS local.db.dim_users")
+# Add required columns
+print("Adding new columns...")
+spark.sql("ALTER TABLE local.db.dim_users ADD COLUMN year INT")
+spark.sql("ALTER TABLE local.db.dim_users ADD COLUMN created_month INT")
 
-# Create dim_sales table with year partition
-print("\nCreating dim_sales table...")
+# Update data with month values first
+print("\nUpdating month values...")
 spark.sql("""
-    CREATE TABLE IF NOT EXISTS local.db.dim_sales (
-        sale_id INT,
-        product STRING,
-        amount DECIMAL(10,2),
-        year INT,
-        month INT
-    ) USING iceberg
-    PARTITIONED BY (year)
+    UPDATE local.db.dim_users
+    SET created_month = MONTH(CURRENT_DATE())
 """)
-sleep(1)
 
-# Insert initial data (year partition only)
-print("\nInserting initial data with year partition...")
+# Update data with year values
+print("\nUpdating year values...")
 spark.sql("""
-    INSERT INTO local.db.dim_sales VALUES
-        (1, 'Laptop', 1200.00, 2023, 1),
-        (2, 'Phone', 800.00, 2023, 2),
-        (3, 'Tablet', 500.00, 2023, 3),
-        (4, 'Monitor', 300.00, 2023, 4)
+    UPDATE local.db.dim_users
+    SET year = YEAR(CURRENT_DATE())
 """)
-sleep(1)
 
-# Show current partition spec
-print("\nCurrent Partition Spec:")
-spark.sql("DESCRIBE TABLE EXTENDED local.db.dim_sales").show(truncate=False)
-
+# Update partition spe
+print("\nUpdating partition spec...")
+spark.sql("ALTER TABLE local.db.dim_users ADD PARTITION FIELD year")
+spark.sql("ALTER TABLE local.db.dim_users ADD PARTITION FIELD created_month")
+# Show updated partition spec
+print("\nUpdated Partition Spec:")
+spark.sql("DESCRIBE TABLE EXTENDED local.db.dim_users").show(truncate=False)
 
 # Show data distribution
-print("\nData Distribution:")
+print("\nData Distribution by Year and Month:")
 spark.sql("""
-    SELECT year, month, count(*) as records
-    FROM local.db.dim_sales
-    GROUP BY year, month
-    ORDER BY year, month
+    SELECT year, created_month, count(*) as records
+    FROM local.db.dim_users
+    GROUP BY year, created_month
+    ORDER BY year, created_month
 """).show(truncate=False)
+
+# Show updated table
+print("\nUpdated Table:")
+spark.sql("SELECT * FROM local.db.dim_users").show(truncate=False)

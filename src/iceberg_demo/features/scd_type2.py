@@ -67,3 +67,6 @@ spark.sql("""
     ON c.id = t.id
     WHERE t.is_current = false
 """)
+
+# Show the final table
+spark.sql("SELECT * FROM local.db.dim_users_scd2").show(truncate=False)

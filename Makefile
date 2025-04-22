@@ -1,6 +1,6 @@
 PYSPARK_PYTHON := $(shell poetry env info -p)/bin/python
 SPARK_SUBMIT = /opt/homebrew/bin/spark-submit
-ICEBERG_PACKAGES = org.apache.iceberg:iceberg-spark-runtime-3.4_2.12:1.5.0
+ICEBERG_PACKAGES = org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.0
 WAREHOUSE_PATH = file:///Users/chanukya/GIT/iceberg_warehouse
 SPARK_COMMON_FLAGS = \
  --packages $(ICEBERG_PACKAGES) \
@@ -9,6 +9,7 @@ SPARK_COMMON_FLAGS = \
  --conf spark.sql.catalog.local.warehouse=$(WAREHOUSE_PATH) \
   --conf spark.ui.showConsoleProgress=false \
   --conf spark.log.level=ERROR \
+  --conf spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions \
   --driver-java-options="-Dlog4j.configuration=file:log4j.properties"
 
 export PYSPARK_PYTHON
