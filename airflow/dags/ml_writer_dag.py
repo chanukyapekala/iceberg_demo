@@ -12,7 +12,7 @@ def run_linear_regression():
 
 # Define the DAG
 with DAG(
-        dag_id="ml_genai_writer_dag",
+        dag_id="ml_writer_dag",
         start_date=datetime(2025, 1, 1),
         schedule=None,
         catchup=False,

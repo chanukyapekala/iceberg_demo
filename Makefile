@@ -142,9 +142,9 @@ run-stream-writer-airflow-dag: start-airflow
 	@export AIRFLOW_HOME=$(AIRFLOW_HOME) && export PYTHONPATH=$(AIRFLOW_HOME)/dags && $(AIRFLOW_CMD) dags trigger stream_writer_dag
 
 .PHONY: run-ml-genai-writer-airflow-dag
-run-ml-genai-writer-airflow-dag: start-airflow
+run-ml-writer-airflow-dag: start-airflow
 	@echo "Triggering Airflow DAG..."
-	@export AIRFLOW_HOME=$(AIRFLOW_HOME) && export PYTHONPATH=$(AIRFLOW_HOME)/dags && $(AIRFLOW_CMD) dags trigger ml_genai_writer_dag
+	@export AIRFLOW_HOME=$(AIRFLOW_HOME) && export PYTHONPATH=$(AIRFLOW_HOME)/dags && $(AIRFLOW_CMD) dags trigger ml_writer_dag
 
 .PHONY: run-batch-writer-airflow-dag
 run-batch-writer-airflow-dag: start-airflow

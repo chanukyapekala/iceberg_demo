@@ -12,3 +12,4 @@ logs
 dist
 airflow/airflow.db
 airflow/airflow-webserver.pid
+streaming/data/checkpoints/
