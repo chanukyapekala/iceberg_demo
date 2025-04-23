@@ -23,3 +23,6 @@ data = [
 df = spark.createDataFrame(data, schema)
 
 df.writeTo("local.db.dim_users").create()
+
+print("\nTable dim_users created with sample data:")
+df.show(truncate=False)

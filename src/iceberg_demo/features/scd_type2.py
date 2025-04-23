@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import current_timestamp, lit, col, when
+from pyspark.sql.functions import current_date, lit, col, when
 
 # Initialize Spark
 spark = SparkSession.builder.getOrCreate()
@@ -27,7 +27,7 @@ spark.sql("""
         id,
         name,
         age,
-        CURRENT_DATE() as start_date,
+        date('2024-12-20') as start_date,
         NULL as end_date,
         TRUE as is_current
     FROM local.db.dim_users
@@ -35,9 +35,11 @@ spark.sql("""
 
 # Create changes DataFrame and register as temp view
 changes = spark.createDataFrame([
-    (1, "Antti Updated", 26, "2024-03-20"),
-    (5, "Jason Updated", 46, "2024-03-20")
-], ["id", "name", "age", "start_date"])
+    (1, "Antti Updated", 26),
+    (5, "Jason Updated", 46)
+], ["id", "name", "age"])
+
+changes = changes.withColumn("start_date", current_date())
 changes.createOrReplaceTempView("changes")
 
 # Update using MERGE
@@ -46,7 +48,7 @@ spark.sql("""
     USING changes s
     ON t.id = s.id AND t.is_current = true
     WHEN MATCHED THEN
-        UPDATE SET end_date = CURRENT_DATE(), is_current = false
+        UPDATE SET end_date = CURRENT_DATE()-1, is_current = false
     WHEN NOT MATCHED THEN
         INSERT (id, name, age, start_date, end_date, is_current)
         VALUES (s.id, s.name, s.age, CAST(s.start_date AS DATE), NULL, true)
@@ -69,4 +71,4 @@ spark.sql("""
 """)
 
 # Show the final table
-spark.sql("SELECT * FROM local.db.dim_users_scd2").show(truncate=False)
+spark.sql("SELECT * FROM local.db.dim_users_scd2 order by name, start_date").show(truncate=False)

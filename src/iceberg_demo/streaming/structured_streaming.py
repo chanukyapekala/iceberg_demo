@@ -75,6 +75,7 @@ query = (
 try:
     print("Streaming query finished.")
     query.awaitTermination()
+    spark.sql("SELECT * FROM local.db.structured_streaming_users").show(truncate=False)
 except Exception as e:
     print(f"Unhandled streaming error: {e}")
     handle_shutdown(None, None)

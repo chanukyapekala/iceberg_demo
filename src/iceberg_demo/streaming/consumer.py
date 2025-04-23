@@ -29,7 +29,7 @@ def create_aggregation_table():
         .createOrReplace()
 
     print(f"Created aggregation table: {agg_table}")
-    agg_df.show()
+    agg_df.show(truncate=False)
 
 if __name__ == "__main__":
     create_aggregation_table()
